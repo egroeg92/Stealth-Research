@@ -19,8 +19,6 @@ public class Enemy : Sprite {
 		visableCells = new ArrayList ();
 		seesPlayer = false;
 
-
-
 	}
 	
 	// Update is called once per frame
