@@ -28,7 +28,7 @@ public class Sprite : MonoBehaviour {
 		
 
 		worldX = map.convertToWorldX ((transform.position.x + transform.forward.x));
-		worldY = map.convertToWorldY(transform.position.y+transform.forward.y);
+		worldY = map.convertToWorldY(transform.position.z+transform.forward.z);
 		current = map.grid [(worldX),  (worldY)];
 		
 	}
@@ -36,8 +36,16 @@ public class Sprite : MonoBehaviour {
 
 		Vector2 worldPos2 = new Vector2 (worldX,worldY);
 		Vector2 worldOtherPos2 = new Vector2 (other.worldX,other.worldY);
+
 		float distance = Vector2.Distance (worldPos2, worldOtherPos2);
-		Debug.Log (distance);
+
+
+		//Debug.Log ("en "+worldPos2 +" , "+ (transform.position+transform.forward));
+		//Debug.Log ("pla "+worldOtherPos2 + " , "+ (other.transform.position+other.transform.forward));
+
+
+		//Debug.Log ("unity d"+Vector2.Distance (new Vector2 (transform.position.x + transform.forward.x, transform.position.z), new Vector2 (other.transform.position.x + other.transform.forward.x, other.transform.position.z)));
+		//Debug.Log ("unity d convert"+map.convertToUnityDistance ((int)distance));
 
 		if (distance <= losRange) {
 			Vector3 to = other.transform.position - transform.position;

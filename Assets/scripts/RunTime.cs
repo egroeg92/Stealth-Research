@@ -76,6 +76,7 @@ public class RunTime : MonoBehaviour {
 	}
 
 	public void OnApplicationQuit () {
+		Debug.Log (Time.frameCount);
 		PathWriter.Instance.SavePathsToFile ("Path.xml", playerNodes);
 	}
 
