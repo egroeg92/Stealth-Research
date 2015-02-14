@@ -22,13 +22,15 @@ public class Player : Sprite {
 			light.toggle();
 		}
 		if (light.on) {
-			losRange = (light.onRange);
+			losRange = light.onRange;
 			losAngle = light.onAngle;
 		} else {
-			losRange = (light.offRange);
+			losRange = light.offRange;
 			losAngle = light.offAngle;
 
 		}
+		//Debug.Log (losRange);
+
 	}
 
 	public bool isSeen(ArrayList visibleCells){

@@ -6,7 +6,6 @@ public class EnemyMover : MonoBehaviour {
 	public Enemy enemy;
 	public float rotSpeed;
 	public float moveSpeed;
-	bool forward = true;
 
 	public WayPoint start;
 	WayPoint current ;
@@ -68,6 +67,12 @@ public class EnemyMover : MonoBehaviour {
 					enemy.transform.Rotate (Vector3.down * Time.deltaTime * rotSpeed);
 				}
 				angle = Vector3.Angle ((current.transform.position - transform.position), transform.forward);
+				cross = Vector3.Cross ((current.transform.position - transform.position), transform.forward);
+				float sign2 = 1;
+				if(cross.y<0)
+					sign2 = -1;
+				if(sign != sign2)
+					transform.forward = (current.transform.position - transform.position);
 				angle = Mathf.RoundToInt (angle);
 				angle *= sign;
 			}

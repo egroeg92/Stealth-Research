@@ -26,7 +26,7 @@ public class Enemy : Sprite {
 		base.Update ();
 		
 
-		float y,xmin,xmax;
+		float xmin,xmax;
 		visableCells.Clear (); 
 		for (int i = 0; i <= losRange; i++) {
 
@@ -34,9 +34,24 @@ public class Enemy : Sprite {
 			xmin = -xmax;
 			for(int j = Mathf.RoundToInt(xmin) ; j <= xmax ; j++)
 			{
-				Cell c = map.grid[j+worldX-1,i+worldY-1];
+				int x = j+worldX;
+				int y = i+worldY;
+
+				if(x >= map.gridX)
+					x = map.gridX-1;
+				if(y >= map.gridY)
+					y = map.gridY-1;
+				if(x<0)
+					x = 0;
+
+				//Debug.Log (x+","+y);
+				Cell c = map.grid[x,y];
 				visableCells.Add (c);
+
+
 			}
+				   
+			
 
 		}
 		visableCellsAtTime.Add (Time.frameCount, visableCells);

@@ -1,17 +1,17 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Enemy.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\FlashLight.cs">
     <Files>
-      <File FileName="Assets\scripts\Enemy.cs" Line="21" Column="1" />
+      <File FileName="Assets\scripts\Enemy.cs" Line="29" Column="9" />
       <File FileName="Assets\scripts\Cell.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\RunTime.cs" Line="53" Column="16" />
-      <File FileName="Assets\scripts\Sprite.cs" Line="20" Column="1" />
-      <File FileName="Assets\scripts\Player.cs" Line="31" Column="1" />
-      <File FileName="Assets\scripts\Map.cs" Line="73" Column="1" />
+      <File FileName="Assets\scripts\RunTime.cs" Line="62" Column="1" />
+      <File FileName="Assets\scripts\Sprite.cs" Line="21" Column="1" />
+      <File FileName="Assets\scripts\Player.cs" Line="33" Column="3" />
+      <File FileName="Assets\scripts\Map.cs" Line="59" Column="23" />
       <File FileName="Assets\scripts\PathWriter.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\TimeNode.cs" Line="1" Column="1" />
       <File FileName="Assets\scripts\GameState.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\FlashLight.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\FlashLight.cs" Line="15" Column="1" />
+      <File FileName="Assets\scripts\EnemyMover.cs" Line="9" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
