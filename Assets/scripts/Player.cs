@@ -19,6 +19,8 @@ public class Player : Sprite {
 	void Update () {
 		base.Update ();
 		if (Input.GetMouseButtonDown (0)) {
+			Debug.Log ("toggle");
+
 			light.toggle();
 		}
 		if (light.on) {

@@ -29,6 +29,16 @@ public class Sprite : MonoBehaviour {
 
 		worldX = map.convertToWorldX ((transform.position.x + transform.forward.x));
 		worldY = map.convertToWorldY(transform.position.z+transform.forward.z);
+
+		if (worldX > map.gridX - 1)
+			worldX = map.gridX - 1;
+		if (worldY > map.gridY - 1)
+			worldY = map.gridY - 1;
+		if (worldX < 0)
+			worldX = 0;
+		if (worldY < 0)
+			worldY = 0;
+
 		current = map.grid [(worldX),  (worldY)];
 		
 	}
