@@ -7,7 +7,11 @@ namespace Common {
 		private static GameState instance = null;
 		public bool won = false;
 		public bool seen = false;
+
 		public int state = 0;
+
+		
+		public bool running = true;
 
 		private GameState(){}
 		public static GameState Instance

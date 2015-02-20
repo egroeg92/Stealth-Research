@@ -10,10 +10,7 @@ public class PlayerReplay : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		XmlDocument trace = new XmlDocument ();
-		trace.Load ("Path.xml");
-		foreach (XmlNode node in trace.DocumentElement.ChildNodes)
-						Debug.Log (node.Value);
+		Debug.Log (XMLParser.Instance.Load ("Path.xml"));
 	}
 	
 	// Update is called once per frame

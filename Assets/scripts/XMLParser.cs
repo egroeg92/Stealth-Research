@@ -6,17 +6,17 @@ using UnityEngine;
 
 
 namespace Common {
-	public class PathWriter {
-		private static PathWriter instance = null;
+	public class XMLParser {
+		private static XMLParser instance = null;
 		public List<PlayerTimeStamp> times = new List<PlayerTimeStamp> ();
 
-		private PathWriter(){}
-		public static PathWriter Instance
+		private XMLParser(){}
+		public static XMLParser Instance
 		{
 			get {
 				if (instance == null)
 				{
-					instance = new PathWriter();
+					instance = new XMLParser();
 				}
 				return instance;
 			}
@@ -25,7 +25,7 @@ namespace Common {
 		public void SavePathsToFile (string file,List<PlayerTimeStamp> playerNodes){
 			times = playerNodes;
 
-			XmlSerializer ser = new XmlSerializer (typeof(PathWriter));
+			XmlSerializer ser = new XmlSerializer (typeof(XMLParser));
 			
 			using (FileStream stream = new FileStream (file, FileMode.Create)) {
 				ser.Serialize (stream, this);
@@ -33,6 +33,19 @@ namespace Common {
 				stream.Close ();
 			}
 		}
+
+		public List<PlayerTimeStamp> Load(string file){
+			XmlSerializer ser = new XmlSerializer(typeof(XMLParser));
+
+			using (FileStream stream = new FileStream (file, FileMode.Open)) {
+				XMLParser P = ser.Deserialize (stream) as XMLParser;
+				stream.Close ();
+
+				//Debug.Log (P.times);
+				return P.times;
+			}
+		}
+	
 	}
 
 }

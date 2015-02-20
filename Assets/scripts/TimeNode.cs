@@ -12,6 +12,7 @@ namespace Common {
 		public int t;
 		public Vector2 worldPos;
 		public Vector3 pos;
+		public bool light;
 		public float los,angle;
 		public Quaternion rot;
 		public List<EnemyTimeStamp> enemies = new List<EnemyTimeStamp> ();

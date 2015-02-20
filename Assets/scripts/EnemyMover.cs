@@ -17,10 +17,10 @@ public class EnemyMover : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 			if (current != null) {
-					if (current.isRot == false)
-							RotateAndMove ();
-					else
-							Rotate ();
+				if (current.isRot == false)
+					RotateAndMove ();
+				else
+					Rotate ();
 			}
 	}
 

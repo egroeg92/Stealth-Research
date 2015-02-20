@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using Common;
@@ -8,9 +8,14 @@ public class RunTime : MonoBehaviour {
 	public Map map;
 	public Enemy[] enemies;
 
+	public string saveTo = "Path.xml";
+	public string loadFrom = "Path.xml";
+
+	public bool ReplayLast = false;
+	int currentFrame = 0;
+	PlayerTimeStamp currentNode;
+
 	List<PlayerTimeStamp> playerNodes;
-
-
 
 	void Start(){
 		GameObject[] en = GameObject.FindGameObjectsWithTag ("Enemy") as GameObject[];
@@ -19,8 +24,19 @@ public class RunTime : MonoBehaviour {
 			enemies [i] = en [i].GetComponent<Enemy> ();
 
 		playerNodes = new List<PlayerTimeStamp> ();
+
+		if (ReplayLast) {
+			GameState.Instance.running = false;
+			playerNodes = XMLParser.Instance.Load(loadFrom);
+			player.disablePlayerControls();
+			currentNode =  playerNodes[0];
+		}
 	}
+
 	void Update () {
+		if (ReplayLast) {
+			setPlayerPos (currentNode);
+		}
 		GameState.Instance.won = false;
 		if (Vector3.Distance (player.transform.position, map.end.transform.position) < 2) {
 			GameState.Instance.won = true;
@@ -36,10 +52,6 @@ public class RunTime : MonoBehaviour {
 	}
 	void LateUpdate()
 	{
-		PlayerTimeStamp p = createPlayerTimeStamp ();
-		playerNodes.Add (p);
-
-
 		GameState.Instance.seen = false;
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
@@ -49,9 +61,27 @@ public class RunTime : MonoBehaviour {
 			}else{
 				e.seesPlayer = false;
 			}
-			EnemyTimeStamp en = createEnemyTimeStamp(i,e);
-			p.enemies.Add(en);
+
+			if(!ReplayLast)
+			{	
+				PlayerTimeStamp p = createPlayerTimeStamp ();
+				EnemyTimeStamp en = createEnemyTimeStamp(i,e);
+				playerNodes.Add (p);
+				p.enemies.Add(en);
+			}
 		}
+		if (ReplayLast) {
+			currentFrame++;
+			if(currentFrame < playerNodes.Count )
+				currentNode = playerNodes[currentFrame];
+		}
+	}
+	void setPlayerPos(PlayerTimeStamp node){
+		player.transform.position = node.pos;
+		player.transform.rotation = node.rot;
+		player.light.on = node.light;
+
+
 	}
 	PlayerTimeStamp createPlayerTimeStamp()
 	{
@@ -59,6 +89,7 @@ public class RunTime : MonoBehaviour {
 		p.t = Time.frameCount;
 		p.pos = player.transform.position;
 		p.worldPos = new Vector2(player.worldX, player.worldY);
+		p.light = player.light.on;
 		p.los = player.losRange;
 		p.angle = player.losAngle;
 		p.rot = player.transform.rotation;
@@ -76,8 +107,8 @@ public class RunTime : MonoBehaviour {
 	}
 
 	public void OnApplicationQuit () {
-		Debug.Log (Time.frameCount);
-		PathWriter.Instance.SavePathsToFile ("Path.xml", playerNodes);
+		if (!ReplayLast)
+			XMLParser.Instance.SavePathsToFile (saveTo, playerNodes);
 	}
 
 	void OnGUI () {

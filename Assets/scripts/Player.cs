@@ -19,8 +19,6 @@ public class Player : Sprite {
 	void Update () {
 		base.Update ();
 		if (Input.GetMouseButtonDown (0)) {
-			Debug.Log ("toggle");
-
 			light.toggle();
 		}
 		if (light.on) {
@@ -31,10 +29,20 @@ public class Player : Sprite {
 			losAngle = light.offAngle;
 
 		}
-		//Debug.Log (losRange);
 
 	}
+	public void disablePlayerControls(){
+		CharacterController cc = GetComponent<CharacterController>();
+		MouseLook ml = GetComponent<MouseLook> ();
 
+		MonoBehaviour cm = gameObject.GetComponent ("CharacterMotor") as MonoBehaviour;
+		MonoBehaviour fps = gameObject.GetComponent ("FPSInputController") as MonoBehaviour;
+
+		fps.enabled = false;
+		cm.enabled = false;
+		cc.enabled = false;
+		ml.enabled = false;
+	}
 	public bool isSeen(ArrayList visibleCells){
 		foreach(Cell c in visibleCells)
 		{
