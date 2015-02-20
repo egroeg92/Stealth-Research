@@ -96,7 +96,8 @@ public class RunTime : MonoBehaviour {
 	void setReplayFramePositions(PlayerTimeStamp node){
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
-		player.light.on = node.light;
+		if (node.light != player.light.on)
+						player.light.toggle ();
 
 		for (int i = 0; i < enemies.Length; i++) {
 			Enemy e = enemies [i];
