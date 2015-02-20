@@ -38,6 +38,7 @@ public class RunTime : MonoBehaviour {
 		if (ReplayLast) {
 			setReplayFramePositions (currentNode);
 		}
+
 		GameState.Instance.won = false;
 		if (Vector3.Distance (player.transform.position, map.end.transform.position) < 2) {
 			GameState.Instance.won = true;
@@ -55,6 +56,8 @@ public class RunTime : MonoBehaviour {
 	{
 		GameState.Instance.seen = false;
 		PlayerTimeStamp p = createPlayerTimeStamp ();
+		enemyMetricContainer emc = new enemyMetricContainer ();
+		emc.count = 0;
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
 			if(e.canSee(player)){
@@ -62,6 +65,18 @@ public class RunTime : MonoBehaviour {
 				e.seesPlayer = true;
 			}else{
 				e.seesPlayer = false;
+			}
+			if(player.canSee(e)){
+				emc.count ++;
+
+				enemyMetric em = new enemyMetric();
+				em.id = i;
+				em.distance = map.convertToWorldDistance(Vector3.Distance(player.transform.position, e.transform.position));
+				Vector3 to = player.transform.position - e.transform.position;
+				Vector3 from = e.transform.forward;
+				em.angle = Vector3.Angle(to, from);
+
+				emc.enemies.Add (em);
 			}
 
 			if(!ReplayLast)
@@ -71,6 +86,7 @@ public class RunTime : MonoBehaviour {
 				p.enemies.Add(en);
 			}
 		}
+		p.enemyMetric = emc;
 		if (ReplayLast) {
 			currentFrame++;
 			if(currentFrame < playerNodes.Count )

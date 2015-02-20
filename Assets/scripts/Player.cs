@@ -11,8 +11,12 @@ public class Player : Sprite {
 	// Use this for initialization
 	void Start () {
 		base.Start ();
-		losRange = light.onRange;
-		losAngle = light.onAngle;
+		losRange = Camera.main.farClipPlane;
+		losAngle = Camera.main.fieldOfView;
+
+		Debug.Log (losRange+","+ losAngle);
+		//losRange = light.onRange;
+		//losAngle = light.onAngle;
 	}
 	
 	// Update is called once per frame
@@ -22,12 +26,11 @@ public class Player : Sprite {
 			light.toggle();
 		}
 		if (light.on) {
-			losRange = light.onRange;
-			losAngle = light.onAngle;
+		//	losRange = light.onRange;
+		//	losAngle = light.onAngle;
 		} else {
-			losRange = light.offRange;
-			losAngle = light.offAngle;
-
+		//	losRange = light.offRange;
+		//	losAngle = light.offAngle;
 		}
 
 	}

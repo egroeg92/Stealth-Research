@@ -15,6 +15,7 @@ namespace Common {
 		public bool light;
 		public float los,angle;
 		public Quaternion rot;
+		public enemyMetricContainer enemyMetric;
 		public List<EnemyTimeStamp> enemies = new List<EnemyTimeStamp> ();
 		
 	}
@@ -28,5 +29,19 @@ namespace Common {
 		public float los,angle;
 		public Quaternion rot;
 		
+	}
+
+	public class enemyMetricContainer{
+
+		[XmlAttribute]
+		public int count;
+		public List<enemyMetric> enemies = new List<enemyMetric> ();
+
+	}
+	public class enemyMetric{
+		[XmlAttribute]
+		public int id;
+		public float distance;
+		public float angle;
 	}
 }
