@@ -12,7 +12,7 @@ public class RunTime : MonoBehaviour {
 	public string loadFrom = "Path.xml";
 
 	public bool ReplayLast = false;
-	int currentFrame = 0;
+	int currentFrame = 1;
 	PlayerTimeStamp currentNode;
 
 	List<PlayerTimeStamp> playerNodes;
@@ -34,8 +34,9 @@ public class RunTime : MonoBehaviour {
 	}
 
 	void Update () {
+		//Debug.Log (currentFrame + "," + Time.frameCount);
 		if (ReplayLast) {
-			setPlayerPos (currentNode);
+			setReplayFramePositions (currentNode);
 		}
 		GameState.Instance.won = false;
 		if (Vector3.Distance (player.transform.position, map.end.transform.position) < 2) {
@@ -53,6 +54,7 @@ public class RunTime : MonoBehaviour {
 	void LateUpdate()
 	{
 		GameState.Instance.seen = false;
+		PlayerTimeStamp p = createPlayerTimeStamp ();
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
 			if(e.canSee(player)){
@@ -64,7 +66,6 @@ public class RunTime : MonoBehaviour {
 
 			if(!ReplayLast)
 			{	
-				PlayerTimeStamp p = createPlayerTimeStamp ();
 				EnemyTimeStamp en = createEnemyTimeStamp(i,e);
 				playerNodes.Add (p);
 				p.enemies.Add(en);
@@ -76,10 +77,16 @@ public class RunTime : MonoBehaviour {
 				currentNode = playerNodes[currentFrame];
 		}
 	}
-	void setPlayerPos(PlayerTimeStamp node){
+	void setReplayFramePositions(PlayerTimeStamp node){
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
 		player.light.on = node.light;
+
+		for (int i = 0; i < enemies.Length; i++) {
+			Enemy e = enemies [i];
+			e.transform.position = node.enemies[i].pos;
+			e.transform.rotation = node.enemies[i].rot;
+		}
 
 
 	}

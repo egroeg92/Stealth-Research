@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Common;
 
 public class EnemyMover : MonoBehaviour {
 
@@ -16,7 +17,8 @@ public class EnemyMover : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-			if (current != null) {
+			
+			if (current != null && GameState.Instance.running) {
 				if (current.isRot == false)
 					RotateAndMove ();
 				else
