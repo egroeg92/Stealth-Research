@@ -1,19 +1,11 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Sprite.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Map.cs">
     <Files>
-      <File FileName="unity.sln" Line="1" Column="1" />
-      <File FileName="Assets\scripts\Sprite.cs" Line="21" Column="1" />
-      <File FileName="Assets\scripts\Enemy.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\Cell.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\RunTime.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\Player.cs" Line="1" Column="1" />
       <File FileName="Assets\scripts\Map.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\PathWriter.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\GameState.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\FlashLight.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\EnemyMover.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\WayPoint.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\PlayerReplay.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\Sprite.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\Enemy.cs" Line="26" Column="18" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

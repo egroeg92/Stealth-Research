@@ -3,27 +3,30 @@ using System.Collections;
 using Common;
 
 public class Enemy : Sprite {
-
-
-
+	
+	
+	
 	public RunTime game;
 	public bool seesPlayer;
+	public FlashLight light;
 	Cell pos;
 	ArrayList visableCells;
-
-
-
+	
+	
+	
 	// Use this for initialization
 	void Start () {
 		base.Start ();
 		visableCells = new ArrayList ();
 		seesPlayer = false;
-
+		
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		base.Update ();
+		
+		light.setLight (losRange, losAngle);
 		
 
 		float xmin,xmax;
