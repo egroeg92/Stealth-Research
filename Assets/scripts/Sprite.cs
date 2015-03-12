@@ -50,6 +50,7 @@ public class Sprite : MonoBehaviour {
 		float distance = Vector2.Distance (worldPos2, worldOtherPos2);
 
 		if (distance <= losRange) {
+
 			Vector3 to = other.transform.position - transform.position;
 			Vector3 from = transform.forward;
 

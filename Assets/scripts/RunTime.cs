@@ -13,6 +13,9 @@ public class RunTime : MonoBehaviour {
 
 	public bool ReplayLast = false;
 	int currentFrame = 1;
+
+
+	float dangerValue = 0f;
 	PlayerTimeStamp currentNode;
 
 	List<PlayerTimeStamp> playerNodes;
@@ -34,9 +37,9 @@ public class RunTime : MonoBehaviour {
 	}
 
 	void Update () {
-		//Debug.Log (currentFrame + "," + Time.frameCount);
+
 		if (ReplayLast) {
-			setReplayFramePositions (currentNode);
+			setReplayFrame (currentNode);
 		}
 
 		GameState.Instance.won = false;
@@ -57,7 +60,9 @@ public class RunTime : MonoBehaviour {
 		GameState.Instance.seen = false;
 		PlayerTimeStamp p = createPlayerTimeStamp ();
 		enemyMetricContainer emc = new enemyMetricContainer ();
+
 		emc.count = 0;
+
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
 			if(e.canSee(player)){
@@ -66,36 +71,53 @@ public class RunTime : MonoBehaviour {
 			}else{
 				e.seesPlayer = false;
 			}
-			if(player.canSee(e)){
-				emc.count ++;
 
-				enemyMetric em = new enemyMetric();
-				em.id = i;
-				em.distance = map.convertToWorldDistance(Vector3.Distance(player.transform.position, e.transform.position));
-				Vector3 to = player.transform.position - e.transform.position;
-				Vector3 from = e.transform.forward;
-				em.angle = Vector3.Angle(to, from);
-
-				emc.enemies.Add (em);
-			}
-
+			// if not a replay, record new metric
 			if(!ReplayLast)
 			{	
+				if(player.canSee(e)){
+					emc.count ++;
+
+					enemyMetric em = new enemyMetric();
+					em.id = i;
+					Vector2 ePos = new Vector2(e.worldX, e.worldY);
+					Vector2 pPos = new Vector2(player.worldX, player.worldY);
+
+
+					em.distance = (Vector2.Distance(ePos, pPos));
+					Vector3 to = player.transform.position - e.transform.position;
+					Vector3 from = e.transform.forward;
+					em.angle = Vector3.Angle(to, from);
+
+					//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
+					//calculateThreat(em);
+					emc.enemyMetrics.Add (em);
+				}
+
 				EnemyTimeStamp en = createEnemyTimeStamp(i,e);
-				playerNodes.Add (p);
 				p.enemies.Add(en);
 			}
+
 		}
-		p.enemyMetric = emc;
+
 		if (ReplayLast) {
 			currentFrame++;
 			if(currentFrame < playerNodes.Count )
 				currentNode = playerNodes[currentFrame];
+
+
+		}else{
+			p.enemyMetricContainer = emc;
+			playerNodes.Add (p);
 		}
+
+
+
 	}
-	void setReplayFramePositions(PlayerTimeStamp node){
+	void setReplayFrame(PlayerTimeStamp node){
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
+
 		if (node.light != player.light.on)
 						player.light.toggle ();
 
@@ -105,7 +127,32 @@ public class RunTime : MonoBehaviour {
 			e.transform.rotation = node.enemies[i].rot;
 		}
 
+		enemyMetricContainer emc = node.enemyMetricContainer;
 
+		if (emc.enemyMetrics.Count == 0)
+						dangerValue = 0;
+		else {
+			foreach (enemyMetric em in emc.enemyMetrics) {
+				//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
+				dangerValue += calculateThreat(em);
+
+			}
+		}
+
+
+	}
+
+	float calculateThreat(enemyMetric em){
+		float danger = 0;
+		//closer to 0 the more dangerous
+		//between 0 and 1
+		float angleDanger = (em.angle/-180f) + 1 ;
+		float distDanger = player.losRange / (em.distance + 1); 
+
+		danger = angleDanger * distDanger;
+
+		Debug.Log (danger);
+		return danger;
 	}
 	PlayerTimeStamp createPlayerTimeStamp()
 	{
@@ -144,6 +191,8 @@ public class RunTime : MonoBehaviour {
 			GUI.Box (new Rect (10, 10, 200, 50), "Lose", s);
 		else
 			GUI.Box (new Rect (10, 10, 200, 50), "", s);
+
+
 
 		
 	}
