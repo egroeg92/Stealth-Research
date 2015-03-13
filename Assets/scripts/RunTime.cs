@@ -19,11 +19,22 @@ public class RunTime : MonoBehaviour {
 	int currentFrame = 1;
 
 
+	public int pathPredictor = 100;
+	Vector3 previousPos;
+	Vector3 presentPos;
+	Vector3 nextPos;
+
 	float dangerValue = 0f;
+
+
+
 	PlayerTimeStamp currentNode;
 
 	List<PlayerTimeStamp> playerNodes;
 
+	LineRenderer playerPathRenderer;
+	LineRenderer projectedPathRenderer;
+	int projectedPointCount;
 	void Start(){
 		GameObject[] en = GameObject.FindGameObjectsWithTag ("Enemy") as GameObject[];
 		enemies = new Enemy[en.Length];
@@ -38,10 +49,33 @@ public class RunTime : MonoBehaviour {
 			player.disablePlayerControls();
 			currentNode =  playerNodes[0];
 
+			playerPathRenderer = player.gameObject.AddComponent<LineRenderer>();
+			playerPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
+
+			playerPathRenderer.SetColors(Color.green, Color.green);
+			playerPathRenderer.SetVertexCount(1);
+			playerPathRenderer.SetWidth(0.2F, 0.2F);
+			playerPathRenderer.SetPosition(0, player.transform.position);
+
+
+			presentPos = player.transform.position;
+			previousPos = player.transform.position;
+			nextPos = player.transform.position;
+
+
+			projectedPathRenderer = gameObject.AddComponent<LineRenderer>();
+			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
+			projectedPathRenderer.SetColors(Color.red, Color.red);
+			projectedPointCount = 1;
+			projectedPathRenderer.SetVertexCount(projectedPointCount);
+			projectedPathRenderer.SetWidth(0.2F, 0.2F);
+			projectedPathRenderer.SetPosition(0, player.transform.position);
+
+
+
 
 		}else{
 			dangerMeter.gameObject.SetActive(false);
-			//Destroy (dangerMeter);
 		}
 	}
 
@@ -114,7 +148,6 @@ public class RunTime : MonoBehaviour {
 			if(currentFrame < playerNodes.Count )
 				currentNode = playerNodes[currentFrame];
 
-
 		}else{
 			p.enemyMetricContainer = emc;
 			playerNodes.Add (p);
@@ -124,11 +157,39 @@ public class RunTime : MonoBehaviour {
 
 	}
 	void setReplayFrame(PlayerTimeStamp node){
+		//draw path
+		if (currentFrame < playerNodes.Count - 1) {
+			playerPathRenderer.SetColors(Color.green, Color.green);
+			playerPathRenderer.SetVertexCount(currentFrame+1);
+			playerPathRenderer.SetPosition (currentFrame, node.pos);
+		}
+
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
-
 		if (node.light != player.light.on)
-						player.light.toggle ();
+			player.light.toggle ();
+
+		//predict next pos
+		if (currentFrame % pathPredictor == 0) {
+			previousPos = presentPos;
+			presentPos = player.transform.position;
+
+			Debug.Log ("currentFrame"+currentFrame+" "+(nextPos - presentPos));
+
+			float dist = Vector3.Distance(presentPos , previousPos);
+			Vector3 dir = (presentPos - previousPos);
+			dir.y = 0f;
+			dir = dir.normalized;
+
+			nextPos = presentPos + (dir * dist);
+
+			projectedPathRenderer.SetColors(Color.red, Color.red);
+			projectedPathRenderer.SetVertexCount(++projectedPointCount );
+			projectedPathRenderer.SetPosition (projectedPointCount-1, nextPos);
+
+		}
+
+
 
 		for (int i = 0; i < enemies.Length; i++) {
 			Enemy e = enemies [i];
@@ -142,10 +203,9 @@ public class RunTime : MonoBehaviour {
 			dangerValue = 0;
 		else {
 			dangerValue = 0;
-			foreach (enemyMetric em in emc.enemyMetrics) {
-				//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
-				dangerValue += calculateThreat(em);
-
+			for (int i = 0; i < emc.enemyMetrics.Count ; i++) {
+				enemyMetric em = emc.enemyMetrics[i];	
+				dangerValue += (calculateThreat(em)/(i+1));
 			}
 
 		}
@@ -155,13 +215,9 @@ public class RunTime : MonoBehaviour {
 
 	float calculateThreat(enemyMetric em){
 		float danger = 0;
-		//closer to 0 the more dangerous
-		//between 0 and 1
 		float angleDanger = (em.angle/-180f) + 1 ;
 		float distDanger = player.losRange / (em.distance + 1); 
-
 		danger = angleDanger * distDanger;
-
 		return danger;
 	}
 	PlayerTimeStamp createPlayerTimeStamp()
@@ -204,7 +260,6 @@ public class RunTime : MonoBehaviour {
 
 		if(ReplayLast)
 		{
-		//	Debug.Log ("dangerValue : "+dangerValue);
 			dangerMeter.value = dangerValue;
 
 		}
