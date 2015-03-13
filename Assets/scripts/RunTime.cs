@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
 using Common;
 
+
 public class RunTime : MonoBehaviour {
+	public Slider dangerMeter;
+
 	public Player player;
 	public Map map;
 	public Enemy[] enemies;
@@ -33,6 +37,11 @@ public class RunTime : MonoBehaviour {
 			playerNodes = XMLParser.Instance.Load(loadFrom);
 			player.disablePlayerControls();
 			currentNode =  playerNodes[0];
+
+
+		}else{
+			dangerMeter.gameObject.SetActive(false);
+			//Destroy (dangerMeter);
 		}
 	}
 
@@ -90,7 +99,7 @@ public class RunTime : MonoBehaviour {
 					em.angle = Vector3.Angle(to, from);
 
 					//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
-					//calculateThreat(em);
+
 					emc.enemyMetrics.Add (em);
 				}
 
@@ -130,13 +139,15 @@ public class RunTime : MonoBehaviour {
 		enemyMetricContainer emc = node.enemyMetricContainer;
 
 		if (emc.enemyMetrics.Count == 0)
-						dangerValue = 0;
+			dangerValue = 0;
 		else {
+			dangerValue = 0;
 			foreach (enemyMetric em in emc.enemyMetrics) {
 				//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
 				dangerValue += calculateThreat(em);
 
 			}
+
 		}
 
 
@@ -151,7 +162,6 @@ public class RunTime : MonoBehaviour {
 
 		danger = angleDanger * distDanger;
 
-		Debug.Log (danger);
 		return danger;
 	}
 	PlayerTimeStamp createPlayerTimeStamp()
@@ -192,7 +202,12 @@ public class RunTime : MonoBehaviour {
 		else
 			GUI.Box (new Rect (10, 10, 200, 50), "", s);
 
+		if(ReplayLast)
+		{
+		//	Debug.Log ("dangerValue : "+dangerValue);
+			dangerMeter.value = dangerValue;
 
+		}
 
 		
 	}
