@@ -67,6 +67,7 @@ public class RunTime : MonoBehaviour {
 			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
 			projectedPathRenderer.SetColors(Color.red, Color.red);
 			projectedPointCount = 1;
+
 			projectedPathRenderer.SetVertexCount(projectedPointCount);
 			projectedPathRenderer.SetWidth(0.2F, 0.2F);
 			projectedPathRenderer.SetPosition(0, player.transform.position);
@@ -183,6 +184,12 @@ public class RunTime : MonoBehaviour {
 
 			nextPos = presentPos + (dir * dist);
 
+			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
+			projectedPathRenderer.SetColors(Color.blue, Color.blue);
+			projectedPathRenderer.SetVertexCount(++projectedPointCount );
+			projectedPathRenderer.SetPosition (projectedPointCount-1, presentPos);
+
+			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
 			projectedPathRenderer.SetColors(Color.red, Color.red);
 			projectedPathRenderer.SetVertexCount(++projectedPointCount );
 			projectedPathRenderer.SetPosition (projectedPointCount-1, nextPos);
