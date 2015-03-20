@@ -16,10 +16,11 @@ public class RunTime : MonoBehaviour {
 	public string loadFrom = "Path.xml";
 
 	public bool ReplayLast = false;
+	public float replaySpeed =100;
 	int currentFrame = 1;
 
 
-	public int pathPredictor = 100;
+	public int pathPredictor = 10;
 	Vector3 previousPos;
 	Vector3 presentPos;
 	Vector3 nextPos;
@@ -33,7 +34,6 @@ public class RunTime : MonoBehaviour {
 	List<PlayerTimeStamp> playerNodes;
 
 	LineRenderer playerPathRenderer;
-	LineRenderer projectedPathRenderer;
 	int projectedPointCount;
 	void Start(){
 		GameObject[] en = GameObject.FindGameObjectsWithTag ("Enemy") as GameObject[];
@@ -61,16 +61,6 @@ public class RunTime : MonoBehaviour {
 			presentPos = player.transform.position;
 			previousPos = player.transform.position;
 			nextPos = player.transform.position;
-
-
-			projectedPathRenderer = gameObject.AddComponent<LineRenderer>();
-			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
-			projectedPathRenderer.SetColors(Color.red, Color.red);
-			projectedPointCount = 1;
-
-			projectedPathRenderer.SetVertexCount(projectedPointCount);
-			projectedPathRenderer.SetWidth(0.2F, 0.2F);
-			projectedPathRenderer.SetPosition(0, player.transform.position);
 
 
 
@@ -101,6 +91,12 @@ public class RunTime : MonoBehaviour {
 	}
 	void LateUpdate()
 	{
+
+		Debug.DrawLine (player.transform.position, (player.transform.position + player.transform.forward * 10),Color.red);
+
+		//Debug.Log (player.worldX +"  "+ player.worldY + "  "+ map.convertToWorldX(player.transform.position.x ) +"  "+map.convertToWorldY(player.transform.position.z));
+
+
 		GameState.Instance.seen = false;
 		PlayerTimeStamp p = createPlayerTimeStamp ();
 		enemyMetricContainer emc = new enemyMetricContainer ();
@@ -109,7 +105,9 @@ public class RunTime : MonoBehaviour {
 
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
+
 			if(e.canSee(player)){
+
 				GameState.Instance.seen = true;
 				e.seesPlayer = true;
 			}else{
@@ -124,6 +122,7 @@ public class RunTime : MonoBehaviour {
 
 					enemyMetric em = new enemyMetric();
 					em.id = i;
+
 					Vector2 ePos = new Vector2(e.worldX, e.worldY);
 					Vector2 pPos = new Vector2(player.worldX, player.worldY);
 
@@ -145,9 +144,13 @@ public class RunTime : MonoBehaviour {
 		}
 
 		if (ReplayLast) {
-			currentFrame++;
-			if(currentFrame < playerNodes.Count )
-				currentNode = playerNodes[currentFrame];
+
+			if((Time.frameCount) % (replaySpeed) == 0){
+				Debug.Log (Time.frameCount + " "+ currentFrame);
+				currentFrame++;
+				if(currentFrame < playerNodes.Count )
+					currentNode = playerNodes[currentFrame];
+			}
 
 		}else{
 			p.enemyMetricContainer = emc;
@@ -158,74 +161,141 @@ public class RunTime : MonoBehaviour {
 
 	}
 	void setReplayFrame(PlayerTimeStamp node){
-		//draw path
-		if (currentFrame < playerNodes.Count - 1) {
-			playerPathRenderer.SetColors(Color.green, Color.green);
-			playerPathRenderer.SetVertexCount(currentFrame+1);
-			playerPathRenderer.SetPosition (currentFrame, node.pos);
-		}
 
+
+		//set player pos
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
 		if (node.light != player.light.on)
 			player.light.toggle ();
 
-		//predict next pos
-		if (currentFrame % pathPredictor == 0) {
-			previousPos = presentPos;
-			presentPos = player.transform.position;
-
-			Debug.Log ("currentFrame"+currentFrame+" "+(nextPos - presentPos));
-
-			float dist = Vector3.Distance(presentPos , previousPos);
-			Vector3 dir = (presentPos - previousPos);
-			dir.y = 0f;
-			dir = dir.normalized;
-
-			nextPos = presentPos + (dir * dist);
-
-			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
-			projectedPathRenderer.SetColors(Color.blue, Color.blue);
-			projectedPathRenderer.SetVertexCount(++projectedPointCount );
-			projectedPathRenderer.SetPosition (projectedPointCount-1, presentPos);
-
-			projectedPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
-			projectedPathRenderer.SetColors(Color.red, Color.red);
-			projectedPathRenderer.SetVertexCount(++projectedPointCount );
-			projectedPathRenderer.SetPosition (projectedPointCount-1, nextPos);
-
-		}
 
 
 
+		//set enemy pos
 		for (int i = 0; i < enemies.Length; i++) {
 			Enemy e = enemies [i];
 			e.transform.position = node.enemies[i].pos;
 			e.transform.rotation = node.enemies[i].rot;
 		}
 
+		//set danger value
 		enemyMetricContainer emc = node.enemyMetricContainer;
 
+		//float actualDanger;
+		dangerValue = 0;
 		if (emc.enemyMetrics.Count == 0)
 			dangerValue = 0;
 		else {
 			dangerValue = 0;
 			for (int i = 0; i < emc.enemyMetrics.Count ; i++) {
-				enemyMetric em = emc.enemyMetrics[i];	
-				dangerValue += (calculateThreat(em)/(i+1));
+				enemyMetric em = emc.enemyMetrics[i];
+				if(player.canSee(enemies[em.id])){
+					dangerValue += (calculateThreat(em.angle, em.distance)/(i+1));
+
+				}
+			
+
+				
 			}
 
 		}
 
+		//draw path
+		if (currentFrame < playerNodes.Count - 1) {
+			playerPathRenderer.SetColors(Color.green, Color.green);
+			playerPathRenderer.SetVertexCount(currentFrame+1);
+			playerPathRenderer.SetPosition (currentFrame, node.pos);
+			
+			//draw seen danger
+			GameObject dangerMeter = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			dangerMeter.renderer.material.color = Color.green;
+			dangerMeter.transform.localScale = new Vector3(.1f , dangerValue + .1f , .1f);
+			dangerMeter.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeter.transform.localScale.y /2) , node.pos.z);
+
+
+
+		
+			//predict next pos
+			if (currentFrame % pathPredictor == 0) {
+				previousPos = presentPos;
+				presentPos = player.transform.position;
+				
+				float dist = Vector3.Distance(presentPos , previousPos);
+				Vector3 dir = (presentPos - previousPos);
+				dir.y = 0f;
+				dir = dir.normalized;
+				
+				nextPos = presentPos + (dir * dist);
+
+				LineRenderer lr = dangerMeter.AddComponent<LineRenderer>();
+				lr.SetWidth(0.1F, 0.1F);
+				lr.material = new Material (Shader.Find("Particles/Additive"));
+				lr.SetColors(Color.blue, Color.blue);
+				lr.SetVertexCount(2);
+				lr.SetPosition(0, presentPos);
+				lr.SetPosition(1, nextPos);
+
+				calculateProjectedThreat(currentFrame + pathPredictor , nextPos);
+
+			}
+		}
 
 	}
 
-	float calculateThreat(enemyMetric em){
+	float calculateThreat(float angle, float dist){
 		float danger = 0;
-		float angleDanger = (em.angle/-180f) + 1 ;
-		float distDanger = player.losRange / (em.distance + 1); 
+		float angleDanger = (angle/-180f) + 1 ;
+		float distDanger = player.losRange / (dist + 1); 
 		danger = angleDanger * distDanger;
 		return danger;
+	}
+	void calculateProjectedThreat(int frame , Vector3 pos){
+
+		PlayerTimeStamp node = playerNodes[frame];
+		List<EnemyTimeStamp> enemies = node.enemies;
+		float danger = 0;
+		
+		Sprite s = Instantiate(player) as Sprite;
+		s.transform.forward = player.transform.forward;
+		s.transform.position = pos;
+		s.worldX = map.convertToWorldX(pos.x);
+		s.worldY = map.convertToWorldY(pos.z);
+
+		Sprite en;
+		foreach(EnemyTimeStamp e in enemies){
+			en = Instantiate(player) as Sprite;
+			en.transform.forward = e.forward;
+			en.transform.position = e.pos;
+			en.worldX = (int)e.worldPos.x;
+			en.worldY = (int)e.worldPos.y;
+
+
+			if(s.canSee(en)){
+				enemyMetric em = new enemyMetric();
+
+				Vector2 ePos = e.worldPos;
+
+				Vector2 pPos = new Vector2(map.convertToWorldX(pos.x), map.convertToWorldY(pos.y));
+					
+				em.distance = (Vector2.Distance(ePos, pPos));
+				Vector3 to = pos - e.pos;
+				Vector3 from = e.forward;
+				em.angle = Vector3.Angle(to, from);
+
+				danger += calculateThreat(em.angle, em.distance);
+			}
+			Destroy(en.gameObject);
+			Destroy(en);
+
+		}
+		Destroy (s.gameObject);
+		Destroy (s);
+		GameObject dangerMeter = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		dangerMeter.renderer.material.color = Color.red;
+		dangerMeter.transform.localScale = new Vector3(.1f , danger + .1f , .1f);
+		dangerMeter.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeter.transform.localScale.y /2) , pos.z);
+
 	}
 	PlayerTimeStamp createPlayerTimeStamp()
 	{
@@ -243,6 +313,7 @@ public class RunTime : MonoBehaviour {
 		EnemyTimeStamp en = new EnemyTimeStamp();
 		en.id = id;
 		en.pos = e.transform.position;
+		en.forward = e.transform.forward;
 		en.worldPos = new Vector2(e.worldX,e.worldY);
 		en.los = e.losRange;
 		en.angle = e.losAngle;

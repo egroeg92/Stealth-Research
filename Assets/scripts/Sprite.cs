@@ -18,8 +18,8 @@ public class Sprite : MonoBehaviour {
 	protected void Start () {
 		TimeNode = new ArrayList();
 
-		worldX = map.convertToWorldX ((transform.position.x + transform.forward.x));
-		worldY = map.convertToWorldY(transform.position.z+transform.forward.z);
+		worldX = map.convertToWorldX (transform.position.x);
+		worldY = map.convertToWorldY(transform.position.z);
 		//losAngle *= Mathf.Deg2Rad;
 	}
 	
@@ -27,8 +27,8 @@ public class Sprite : MonoBehaviour {
 	protected void Update () {
 		
 
-		worldX = map.convertToWorldX ((transform.position.x + transform.forward.x));
-		worldY = map.convertToWorldY(transform.position.z+transform.forward.z);
+		worldX = map.convertToWorldX ((transform.position.x));
+		worldY = map.convertToWorldY(transform.position.z);
 
 		if (worldX > map.gridX - 1)
 			worldX = map.gridX - 1;
@@ -73,5 +73,7 @@ public class Sprite : MonoBehaviour {
 		}
 		return false;
 	}
+
+
 
 }

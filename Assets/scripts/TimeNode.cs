@@ -26,6 +26,7 @@ namespace Common {
 		public int id;
 		public Vector2 worldPos;
 		public Vector3 pos;
+		public Vector3 forward;
 		public float los,angle;
 		public Quaternion rot;
 		

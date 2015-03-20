@@ -14,7 +14,7 @@ public class Player : Sprite {
 		losRange = Camera.main.farClipPlane;
 		losAngle = Camera.main.fieldOfView;
 
-		Debug.Log (losRange+","+ losAngle);
+		//Debug.Log (losRange+","+ losAngle);
 		//losRange = light.onRange;
 		//losAngle = light.onAngle;
 	}
