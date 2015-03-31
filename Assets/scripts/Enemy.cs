@@ -10,14 +10,14 @@ public class Enemy : Sprite {
 	public bool seesPlayer;
 	public FlashLight light;
 	Cell pos;
-	ArrayList visableCells;
+	//ArrayList visableCells;
 	
 	
 	
 	// Use this for initialization
 	void Start () {
 		base.Start ();
-		visableCells = new ArrayList ();
+//		visableCells = new ArrayList ();
 		seesPlayer = false;
 		
 	}
@@ -30,6 +30,7 @@ public class Enemy : Sprite {
 		
 
 		float xmin,xmax;
+		/*
 		visableCells.Clear (); 
 		for (int i = 0; i <= losRange; i++) {
 
@@ -58,12 +59,14 @@ public class Enemy : Sprite {
 
 		}
 		visableCellsAtTime.Add (Time.frameCount, visableCells);
+
+		*/
 	}
 
-
+	/*
 	public ArrayList getVisibleCells(){
 		return visableCells;
 	}
-
+*/
 
 }

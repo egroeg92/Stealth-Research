@@ -46,6 +46,7 @@ public class Player : Sprite {
 		cc.enabled = false;
 		ml.enabled = false;
 	}
+	/*
 	public bool isSeen(ArrayList visibleCells){
 		foreach(Cell c in visibleCells)
 		{
@@ -56,5 +57,5 @@ public class Player : Sprite {
 		}
 		return false;
 	}
-
+*/
 }

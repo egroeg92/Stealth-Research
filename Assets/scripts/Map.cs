@@ -58,6 +58,8 @@ public class Map : MonoBehaviour {
 
 		
 	}
+
+	/*
 	public int convertToWorldX(float x){
 		return Mathf.RoundToInt(((x + maxX)+cellDim/2) / cellDim)-1;
 	}
@@ -72,5 +74,5 @@ public class Map : MonoBehaviour {
 	{
 		return cellDim * cellAmount;
 	}
-	
+	*/
 }

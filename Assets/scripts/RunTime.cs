@@ -125,16 +125,12 @@ public class RunTime : MonoBehaviour {
 					enemyMetric em = new enemyMetric();
 					em.id = i;
 
-					Vector2 ePos = new Vector2(e.worldX, e.worldY);
-					Vector2 pPos = new Vector2(player.worldX, player.worldY);
 
 
-					em.distance = (Vector2.Distance(ePos, pPos));
+					em.distance = (Vector2.Distance(e.transform.position, player.transform.position));
 					Vector3 to = player.transform.position - e.transform.position;
 					Vector3 from = e.transform.forward;
 					em.angle = Vector3.Angle(to, from);
-
-					//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
 
 					emc.enemyMetrics.Add (em);
 				}
@@ -263,7 +259,18 @@ public class RunTime : MonoBehaviour {
 	float calculateThreatEvenAngle(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = player.losRange / (dist + 1); 
+		
+		float max = map.maxX;
+		if(map.maxY > max)
+			max = map.maxY;
+		max *= 2;
+
+
+		float distDanger = (max / (dist + 1) ) ; 
+
+
+
+
 		danger = angleDanger * distDanger;
 
 		return danger;
@@ -274,10 +281,13 @@ public class RunTime : MonoBehaviour {
 
 		float angleDanger = (angle/-180f) + .1f ;
 
-		float distDanger = player.losRange / (dist + 1); 
 
-	//	Debug.Log ("angle " + angleDanger);
-	//	Debug.Log ("dist "+distDanger);
+		
+		float max = map.maxX;
+		if(map.maxY > max)
+			max = map.maxY;
+		float distDanger = max/(dist + 1); 
+
 
 		danger = angleDanger + distDanger;
 		
@@ -286,15 +296,13 @@ public class RunTime : MonoBehaviour {
 	}
 
 
-	//sort of hacky, created new player at projected spot and new enemies and calculated if it could see the enemies
 	void calculateProjectedThreat(int frame , Vector3 pos){
 
 		PlayerTimeStamp node = playerNodes[frame];
 		List<EnemyTimeStamp> enemyStamps = node.enemies;
 
 		Player p = Instantiate (player) as Player;
-		float worldX = map.convertToWorldX(pos.x);
-		float worldY = map.convertToWorldY(pos.z);
+
 		p.transform.position = pos;
 		float distDanger = 0;
 		float angleDanger = 0;
@@ -302,9 +310,7 @@ public class RunTime : MonoBehaviour {
 		foreach(EnemyTimeStamp e in enemyStamps){
 			Vector3 eForward = e.forward;
 			Vector3 ePos = e.pos;
-			float eWorldX = e.worldPos.x;
-			float eWorldY = e.worldPos.y;
-
+		
 			Enemy enemy = Instantiate(enemies[0]) as Enemy;
 			enemy.transform.rotation = e.rot;
 			enemy.transform.position = ePos;
@@ -321,15 +327,9 @@ public class RunTime : MonoBehaviour {
 
 			if(hit.transform.gameObject == p.gameObject)
 			{
-				//enemyMetric em = new enemyMetric();
+				float distance = (Vector2.Distance(ePos, pos));
 
-				Vector2 eWorldPos = new Vector3(eWorldX, eWorldY);
-				Vector2 pWorldPos = new Vector2(worldX, worldY);
-						
-				float distance = (Vector2.Distance(eWorldPos, pWorldPos));
 				float angle = Vector3.Angle(to, from);
-
-				//Debug.Log (distance +" "+ angle);
 
 
 				distDanger += calculateThreatDistance(angle, distance);
@@ -367,7 +367,7 @@ public class RunTime : MonoBehaviour {
 		PlayerTimeStamp p = new PlayerTimeStamp ();
 		p.t = Time.frameCount;
 		p.pos = player.transform.position;
-		p.worldPos = new Vector2(player.worldX, player.worldY);
+//		p.worldPos = new Vector2(player.worldX, player.worldY);
 		p.light = player.light.on;
 		p.los = player.losRange;
 		p.angle = player.losAngle;
@@ -379,7 +379,7 @@ public class RunTime : MonoBehaviour {
 		en.id = id;
 		en.pos = e.transform.position;
 		en.forward = e.transform.forward;
-		en.worldPos = new Vector2(e.worldX,e.worldY);
+		//en.worldPos = new Vector2(e.worldX,e.worldY);
 		en.los = e.losRange;
 		en.angle = e.losAngle;
 		en.rot = e.transform.rotation;

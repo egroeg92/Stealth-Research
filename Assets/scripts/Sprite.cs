@@ -4,48 +4,37 @@ using Common;
 
 public class Sprite : MonoBehaviour {
 	
-	public Cell current;
+//	public Cell current;
 	public Map map;
 	
 	
 	public Hashtable visableCellsAtTime = new Hashtable();
 	public ArrayList TimeNode;
 	
-	public int worldX, worldY;
+//	public int worldX, worldY;
 	public float losRange;
 	public float losAngle;
 	// Use this for initialization
 	protected void Start () {
 		TimeNode = new ArrayList();
 
-		worldX = map.convertToWorldX (transform.position.x);
-		worldY = map.convertToWorldY(transform.position.z);
+//		worldX = map.convertToWorldX (transform.position.x);
+//		worldY = map.convertToWorldY(transform.position.z);
 		//losAngle *= Mathf.Deg2Rad;
 	}
 	
 	// Update is called once per frame
 	protected void Update () {
-		
 
-		worldX = map.convertToWorldX ((transform.position.x));
-		worldY = map.convertToWorldY(transform.position.z);
-
-		if (worldX > map.gridX - 1)
-			worldX = map.gridX - 1;
-		if (worldY > map.gridY - 1)
-			worldY = map.gridY - 1;
-		if (worldX < 0)
-			worldX = 0;
-		if (worldY < 0)
-			worldY = 0;
-
-		current = map.grid [(worldX),  (worldY)];
-		
 	}
 	public bool canSee(Sprite other){
 
-		Vector2 worldPos2 = new Vector2 (worldX,worldY);
-		Vector2 worldOtherPos2 = new Vector2 (other.worldX,other.worldY);
+	//	Vector2 worldPos2 = new Vector2 (worldX,worldY);
+	//	Vector2 worldOtherPos2 = new Vector2 (other.worldX,other.worldY);
+
+		Vector2 worldPos2 = new Vector2 (transform.position.x, transform.position.y);
+		Vector2 worldOtherPos2 = new Vector2 (other.transform.position.x, other.transform.position.y);
+
 
 		float distance = Vector2.Distance (worldPos2, worldOtherPos2);
 

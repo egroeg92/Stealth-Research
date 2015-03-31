@@ -12,7 +12,11 @@ public class FlashLight : MonoBehaviour {
 	void Start () {
 		
 		on = true;
-		flashLight.range = map.convertToUnityDistance(onRange);
+
+
+		//flashLight.range = map.convertToUnityDistance(onRange);
+		flashLight.range = onRange;
+
 		flashLight.spotAngle = (onAngle);
 		
 	}
@@ -36,7 +40,8 @@ public class FlashLight : MonoBehaviour {
 	}
 	public void setLight(float range, float angle)
 	{
-		flashLight.range = map.convertToUnityDistance (range);
+//		flashLight.range = map.convertToUnityDistance (range);
+		flashLight.range = range;
 		flashLight.spotAngle = angle;
 	}
 	/// <summary>
