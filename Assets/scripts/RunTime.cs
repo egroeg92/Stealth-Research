@@ -184,19 +184,37 @@ public class RunTime : MonoBehaviour {
 		//float actualDanger;
 		dangerValueAngle = 0;
 		dangerValueDist = 0;
+
+		ArrayList dangersAngle = new ArrayList ();
+		ArrayList dangersDist = new ArrayList ();
+
+
 		if (emc.enemyMetrics.Count != 0){
 			for (int i = 0; i < emc.enemyMetrics.Count ; i++) {
 				enemyMetric em = emc.enemyMetrics[i];
 
 				if(player.canSee(enemies[em.id])){
-					
-					dangerValueAngle += (calculateThreatEvenAngle(em.angle, em.distance)/(i+1));
-					dangerValueDist += (calculateThreatDistance(em.angle, em.distance)/(i+1));
+
+					dangersAngle.Add(calculateThreatEvenAngle(em.angle, em.distance));
+					dangersDist.Add(calculateThreatDistance(em.angle, em.distance)/(i+1));
+					                
+				//	dangerValueAngle += (calculateThreatEvenAngle(em.angle, em.distance)/(i+1));
+				//	dangerValueDist += (calculateThreatDistance(em.angle, em.distance)/(i+1));
 
 				}
 			}
 
 		}
+		dangersAngle.Sort();
+		dangersDist.Sort();
+
+		float j = 1;
+		for(int i = dangersAngle.Count - 1; i >= 0 ; i-- ){
+			dangerValueAngle += (float)dangersAngle[i]/j;
+			dangerValueDist += (float)dangersDist[i]/j;
+			j++;
+		}
+
 		// dangerValue max is 20
 		dangerValueAngle = (dangerValueAngle > maxDangerValue) ? maxDangerValue : dangerValueAngle;
 		dangerValueDist = (dangerValueDist > maxDangerValue) ? maxDangerValue : dangerValueDist;
@@ -261,17 +279,17 @@ public class RunTime : MonoBehaviour {
 
 	float calculateThreatEvenAngle(float angle, float dist){
 		float danger = 0;
-		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = safeDistance / (dist + 1); 
-		danger = angleDanger * distDanger;
+		float angleDanger = -(angle/180f) + 1 ;
+		float distDanger = -(dist/safeDistance) + 1; 
+		danger = ((2* angleDanger) + distDanger) * maxDangerValue / 3;
 		return danger;
 	}
 
 	float calculateThreatDistance(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = safeDistance / (dist + 1); 
-		danger = angleDanger + distDanger;
+		float distDanger = -(dist/safeDistance) + 1; ; 
+		danger = (angleDanger + (2* distDanger))*maxDangerValue/3;
 		return danger;
 	}
 
