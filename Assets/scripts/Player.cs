@@ -12,12 +12,9 @@ public class Player : Sprite {
 	void Start () {
 		base.Start ();
 
-		losRange = map.rowAmount;
+		losRange = Camera.main.farClipPlane;
 		losAngle = Camera.main.fieldOfView;
 
-		//Debug.Log (losRange+","+ losAngle);
-		//losRange = light.onRange;
-		//losAngle = light.onAngle;
 	}
 	
 	// Update is called once per frame

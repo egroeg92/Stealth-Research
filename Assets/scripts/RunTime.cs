@@ -17,10 +17,13 @@ public class RunTime : MonoBehaviour {
 
 	public bool ReplayLast = false;
 	public float replaySpeed =100;
+	public float safeDistance = 30;
+
 	int currentFrame = 1;
 
 
 	public int pathPredictor = 10;
+	public int framesPerMeter = 10;
 	Vector3 previousPos;
 	Vector3 presentPos;
 	Vector3 nextPos;
@@ -96,7 +99,6 @@ public class RunTime : MonoBehaviour {
 
 		Debug.DrawLine (player.transform.position, (player.transform.position + player.transform.forward * 10),Color.red);
 
-		//Debug.Log (player.worldX +"  "+ player.worldY + "  "+ map.convertToWorldX(player.transform.position.x ) +"  "+map.convertToWorldY(player.transform.position.z));
 
 
 		GameState.Instance.seen = false;
@@ -109,7 +111,6 @@ public class RunTime : MonoBehaviour {
 			Enemy e = enemies[i];
 
 			if(e.canSee(player)){
-
 				GameState.Instance.seen = true;
 				e.seesPlayer = true;
 			}else{
@@ -125,16 +126,15 @@ public class RunTime : MonoBehaviour {
 					enemyMetric em = new enemyMetric();
 					em.id = i;
 
-					Vector2 ePos = new Vector2(e.worldX, e.worldY);
-					Vector2 pPos = new Vector2(player.worldX, player.worldY);
-
+					Vector2 ePos = new Vector2(e.transform.position.x, e.transform.position.z);
+					Vector2 pPos = new Vector2(player.transform.position.x, player.transform.position.z);
 
 					em.distance = (Vector2.Distance(ePos, pPos));
+
 					Vector3 to = player.transform.position - e.transform.position;
 					Vector3 from = e.transform.forward;
-					em.angle = Vector3.Angle(to, from);
 
-					//Debug.Log ("ANGLE : "+em.angle+" DIST : "	+em.distance);
+					em.angle = Vector3.Angle(to, from);
 
 					emc.enemyMetrics.Add (em);
 				}
@@ -162,16 +162,12 @@ public class RunTime : MonoBehaviour {
 
 	}
 	void setReplayFrame(PlayerTimeStamp node){
-
-
 		//set player pos
 		player.transform.position = node.pos;
 		player.transform.rotation = node.rot;
+
 		if (node.light != player.light.on)
 			player.light.toggle ();
-
-
-
 
 		//set enemy pos
 		for (int i = 0; i < enemies.Length; i++) {
@@ -191,6 +187,7 @@ public class RunTime : MonoBehaviour {
 				enemyMetric em = emc.enemyMetrics[i];
 
 				if(player.canSee(enemies[em.id])){
+					
 					dangerValueAngle += (calculateThreatEvenAngle(em.angle, em.distance)/(i+1));
 					dangerValueDist += (calculateThreatDistance(em.angle, em.distance)/(i+1));
 
@@ -198,39 +195,40 @@ public class RunTime : MonoBehaviour {
 			}
 
 		}
-		dangerValueAngle = (dangerValueAngle > 15) ? 15 : dangerValueAngle;
-		dangerValueDist = (dangerValueDist > 15) ? 15 : dangerValueDist;
+		// dangerValue max is 20
+		dangerValueAngle = (dangerValueAngle > 20) ? 20 : dangerValueAngle;
+		dangerValueDist = (dangerValueDist > 20) ? 20 : dangerValueDist;
 
 		//draw path
 		if (currentFrame < playerNodes.Count - 1) {
 			playerPathRenderer.SetColors(Color.green, Color.green);
 			playerPathRenderer.SetVertexCount(currentFrame+1);
 			playerPathRenderer.SetPosition (currentFrame, node.pos);
+
+
+			GameObject dangerMeterDist = null;
+			GameObject dangerMeterAngle = null;
+			//draw danger 
+			// only draw danger every framesPerMeter frames
+			if(currentFrame % framesPerMeter == 0){
+				dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
+				dangerMeterDist.layer = layerMask;
+				dangerMeterDist.renderer.material.color = Color.green;
+				dangerMeterDist.transform.localScale = new Vector3(.1f , dangerValueDist + .1f , .05f);
+				dangerMeterDist.transform.position = new Vector3(node.pos.x  , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , node.pos.z- .025f);
+			}
+
+			if(currentFrame % framesPerMeter == 0 ){
+
+				dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+				dangerMeterAngle.layer = layerMask;
+				dangerMeterAngle.renderer.material.color = Color.cyan;
+				dangerMeterAngle.transform.localScale = new Vector3(.1f , dangerValueAngle + .1f , .05f);
+				dangerMeterAngle.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , node.pos.z+ .025f);
 			
-			//draw danger
-			GameObject dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			//			Debug.Log (layerMask);
-			dangerMeterDist.layer = layerMask;
-			dangerMeterDist.renderer.material.color = Color.green;
-			dangerMeterDist.transform.localScale = new Vector3(.1f , dangerValueDist + .1f , .05f);
-			dangerMeterDist.transform.position = new Vector3(node.pos.x  , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , node.pos.z- .025f);
-			
-
-
-			GameObject dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-//			Debug.Log (layerMask);
-			dangerMeterAngle.layer = layerMask;
-			dangerMeterAngle.renderer.material.color = Color.cyan;
-			dangerMeterAngle.transform.localScale = new Vector3(.1f , dangerValueAngle + .1f , .05f);
-			dangerMeterAngle.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , node.pos.z+ .025f);
-
-
-
-
-
-		
-			//predict next pos
-			if (currentFrame % pathPredictor == 0) {
+			}
+				//predict next pos
+			if (currentFrame % pathPredictor == 0 && dangerMeterAngle != null) {
 				previousPos = presentPos;
 				presentPos = player.transform.position;
 				
@@ -250,10 +248,11 @@ public class RunTime : MonoBehaviour {
 				lr.SetPosition(1, nextPos);
 
 				int projectedFrame = currentFrame + pathPredictor;
-				if(projectedFrame < playerNodes.Count)
+				if(projectedFrame < playerNodes.Count){
 					calculateProjectedThreat(currentFrame + pathPredictor , nextPos);
-
+				}
 			}
+
 		}
 
 	}
@@ -261,8 +260,7 @@ public class RunTime : MonoBehaviour {
 	float calculateThreatEvenAngle(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = player.losRange / (dist + 1); 
-		Debug.Log (player.losRange + "/" +(dist + 1) + " = " + distDanger);
+		float distDanger = safeDistance / (dist + 1); 
 		danger = angleDanger * distDanger;
 		return danger;
 	}
@@ -270,37 +268,33 @@ public class RunTime : MonoBehaviour {
 	float calculateThreatDistance(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = player.losRange / (dist + 1); 
+		float distDanger = safeDistance / (dist + 1); 
 		danger = angleDanger + distDanger;
 		return danger;
 	}
 
 
 	//sort of hacky, created new player at projected spot and new enemies and calculated if it could see the enemies
+	//Projected threat is still calculated if the enemy is not within sight of the enemy, but there are no obstacles between the enemy and player
 	void calculateProjectedThreat(int frame , Vector3 pos){
 
 		PlayerTimeStamp node = playerNodes[frame];
 		List<EnemyTimeStamp> enemyStamps = node.enemies;
 
 		Player p = Instantiate (player) as Player;
-		float worldX = map.convertToWorldX(pos.x);
-		float worldY = map.convertToWorldY(pos.z);
 		p.transform.position = pos;
+
 		float distDanger = 0;
 		float angleDanger = 0;
 
 		foreach(EnemyTimeStamp e in enemyStamps){
 			Vector3 eForward = e.forward;
-			Vector3 ePos = e.pos;
-			float eWorldX = e.worldPos.x;
-			float eWorldY = e.worldPos.y;
-
 			Enemy enemy = Instantiate(enemies[0]) as Enemy;
 			enemy.transform.rotation = e.rot;
-			enemy.transform.position = ePos;
+			enemy.transform.position = e.pos;
 
 			
-			Vector3 to = pos - ePos;
+			Vector3 to = pos - e.pos;
 			Vector3 from = e.forward;
 
 			int lm = 1 << 8;
@@ -311,9 +305,10 @@ public class RunTime : MonoBehaviour {
 
 			if(hit.transform.gameObject == p.gameObject)
 			{
-				Vector2 eWorldPos = new Vector3(eWorldX, eWorldY);
-				Vector2 pWorldPos = new Vector2(worldX, worldY);
-						
+				Vector2 eWorldPos = new Vector3(e.pos.x, e.pos.z);
+				Vector2 pWorldPos = new Vector2(p.transform.position.x, p.transform.position.z);
+					
+
 				float distance = (Vector2.Distance(eWorldPos, pWorldPos));
 				float angle = Vector3.Angle(to, from);
 
@@ -334,19 +329,20 @@ public class RunTime : MonoBehaviour {
 		Destroy(p.gameObject);
 		Destroy (p);
 
-		GameObject dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		dangerMeterDist.layer = layerMask;
-		dangerMeterDist.renderer.material.color = Color.red;
-		dangerMeterDist.transform.localScale = new Vector3(.1f , distDanger + .1f , .05f);
-		dangerMeterDist.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , pos.z-0.025f);
-
-		
-		GameObject dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		dangerMeterAngle.layer = layerMask;
-		dangerMeterAngle.renderer.material.color = Color.magenta;
-		dangerMeterAngle.transform.localScale = new Vector3(.1f , angleDanger + .1f , .05f);
-		dangerMeterAngle.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , pos.z+0.025f);
-
+		if(distDanger > 0){
+			GameObject dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			dangerMeterDist.layer = layerMask;
+			dangerMeterDist.renderer.material.color = Color.red;
+			dangerMeterDist.transform.localScale = new Vector3(.1f , distDanger + .1f , .05f);
+			dangerMeterDist.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , pos.z-0.025f);
+		}		
+		if(angleDanger > 0){
+			GameObject dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			dangerMeterAngle.layer = layerMask;
+			dangerMeterAngle.renderer.material.color = Color.magenta;
+			dangerMeterAngle.transform.localScale = new Vector3(.1f , angleDanger + .1f , .05f);
+			dangerMeterAngle.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , pos.z+0.025f);
+		}
 
 
 
@@ -356,7 +352,6 @@ public class RunTime : MonoBehaviour {
 		PlayerTimeStamp p = new PlayerTimeStamp ();
 		p.t = Time.frameCount;
 		p.pos = player.transform.position;
-		p.worldPos = new Vector2(player.worldX, player.worldY);
 		p.light = player.light.on;
 		p.los = player.losRange;
 		p.angle = player.losAngle;
@@ -368,7 +363,6 @@ public class RunTime : MonoBehaviour {
 		en.id = id;
 		en.pos = e.transform.position;
 		en.forward = e.transform.forward;
-		en.worldPos = new Vector2(e.worldX,e.worldY);
 		en.los = e.losRange;
 		en.angle = e.losAngle;
 		en.rot = e.transform.rotation;

@@ -10,7 +10,6 @@ namespace Common {
 	public class PlayerTimeStamp{
 		[XmlAttribute]
 		public int t;
-		public Vector2 worldPos;
 		public Vector3 pos;
 		public bool light;
 		public float los,angle;
@@ -24,7 +23,6 @@ namespace Common {
 		
 		[XmlAttribute]
 		public int id;
-		public Vector2 worldPos;
 		public Vector3 pos;
 		public Vector3 forward;
 		public float los,angle;

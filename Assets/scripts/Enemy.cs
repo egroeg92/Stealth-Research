@@ -16,8 +16,7 @@ public class Enemy : Sprite {
 		base.Start ();
 		seesPlayer = false;
 
-		losRange = map.convertToWorldDistance (losRange);
-		
+
 	}
 	
 	// Update is called once per frame

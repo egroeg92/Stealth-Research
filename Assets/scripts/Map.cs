@@ -39,38 +39,8 @@ public class Map : MonoBehaviour {
 		maxX = gameObject.renderer.bounds.max.x;
 		minY = gameObject.renderer.bounds.min.z;
 		maxY = gameObject.renderer.bounds.max.z;
-	//	Debug.Log (maxX +","+ maxY);
-
-		
-		cellDim = (maxY - minY) / rowAmount;
-		gridY = rowAmount;
-		gridX = Mathf.CeilToInt((maxX - minX) / cellDim);
-		Vector3 pos = new Vector3 (minX + cellDim / 2, 0, minY + cellDim / 2);
-		
-		grid = new Cell[gridX, gridY];
-		for (int x = 0; x < gridX; x++) {
-			for (int y = 0; y < gridY; y++) {
-				float incX = cellDim*x;
-				float incY = cellDim*y;
-				grid [x, y] = new Cell (x,y, pos + new Vector3(incX, 0, incY));
-			}
-		}
 
 		
 	}
-	public int convertToWorldX(float x){
-		return Mathf.RoundToInt(((x + maxX)+cellDim/2) / cellDim)-1;
-	}
-	public int convertToWorldY(float y){
-		return Mathf.RoundToInt(((y + maxY)+cellDim/2) / cellDim)-1;
-	}
-	public int convertToWorldDistance(float dis)
-	{
-		return Mathf.CeilToInt(dis / cellDim);
-	}
-	public float convertToUnityDistance(float cellAmount)
-	{
-		return cellDim * cellAmount;
-	}
-	
+
 }
