@@ -21,7 +21,7 @@ public class RunTime : MonoBehaviour {
 
 	int currentFrame = 1;
 
-
+	public float maxDangerValue=20;
 	public int pathPredictor = 10;
 	public int framesPerMeter = 10;
 	Vector3 previousPos;
@@ -48,6 +48,8 @@ public class RunTime : MonoBehaviour {
 
 		playerNodes = new List<PlayerTimeStamp> ();
 
+
+		dangerMeter.maxValue = maxDangerValue;
 		if (ReplayLast) {
 			GameState.Instance.running = false;
 			playerNodes = XMLParser.Instance.Load(loadFrom);
@@ -196,8 +198,8 @@ public class RunTime : MonoBehaviour {
 
 		}
 		// dangerValue max is 20
-		dangerValueAngle = (dangerValueAngle > 20) ? 20 : dangerValueAngle;
-		dangerValueDist = (dangerValueDist > 20) ? 20 : dangerValueDist;
+		dangerValueAngle = (dangerValueAngle > maxDangerValue) ? maxDangerValue : dangerValueAngle;
+		dangerValueDist = (dangerValueDist > maxDangerValue) ? maxDangerValue : dangerValueDist;
 
 		//draw path
 		if (currentFrame < playerNodes.Count - 1) {
@@ -210,7 +212,7 @@ public class RunTime : MonoBehaviour {
 			GameObject dangerMeterAngle = null;
 			//draw danger 
 			// only draw danger every framesPerMeter frames
-			if(currentFrame % framesPerMeter == 0){
+			if(dangerValueDist > 0 && currentFrame % framesPerMeter == 0){
 				dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
 				dangerMeterDist.layer = layerMask;
 				dangerMeterDist.renderer.material.color = Color.green;
@@ -223,7 +225,7 @@ public class RunTime : MonoBehaviour {
 				dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
 				dangerMeterAngle.layer = layerMask;
 				dangerMeterAngle.renderer.material.color = Color.cyan;
-				dangerMeterAngle.transform.localScale = new Vector3(.1f , dangerValueAngle + .1f , .05f);
+				dangerMeterAngle.transform.localScale = new Vector3(.1f , dangerValueAngle , .05f);
 				dangerMeterAngle.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , node.pos.z+ .025f);
 			
 			}
@@ -322,8 +324,8 @@ public class RunTime : MonoBehaviour {
 
 		}
 
-		distDanger = (distDanger > 15) ? 15 : distDanger;
-		angleDanger = (angleDanger > 15) ? 15 : angleDanger;
+		distDanger = (distDanger > maxDangerValue) ? maxDangerValue : distDanger;
+		angleDanger = (angleDanger > maxDangerValue) ? maxDangerValue : angleDanger;
 
 
 		Destroy(p.gameObject);
