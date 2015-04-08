@@ -11,7 +11,8 @@ public class Player : Sprite {
 	// Use this for initialization
 	void Start () {
 		base.Start ();
-		losRange = Camera.main.farClipPlane;
+
+		losRange = map.rowAmount;
 		losAngle = Camera.main.fieldOfView;
 
 		//Debug.Log (losRange+","+ losAngle);

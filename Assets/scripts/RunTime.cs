@@ -186,22 +186,20 @@ public class RunTime : MonoBehaviour {
 		//float actualDanger;
 		dangerValueAngle = 0;
 		dangerValueDist = 0;
-		if (emc.enemyMetrics.Count == 0)
-			dangerValueAngle = 0;
-		else {
-			dangerValueAngle = 0;
+		if (emc.enemyMetrics.Count != 0){
 			for (int i = 0; i < emc.enemyMetrics.Count ; i++) {
 				enemyMetric em = emc.enemyMetrics[i];
-				//only care if player can see the enemy
+
 				if(player.canSee(enemies[em.id])){
 					dangerValueAngle += (calculateThreatEvenAngle(em.angle, em.distance)/(i+1));
 					dangerValueDist += (calculateThreatDistance(em.angle, em.distance)/(i+1));
-
 
 				}
 			}
 
 		}
+		dangerValueAngle = (dangerValueAngle > 15) ? 15 : dangerValueAngle;
+		dangerValueDist = (dangerValueDist > 15) ? 15 : dangerValueDist;
 
 		//draw path
 		if (currentFrame < playerNodes.Count - 1) {
@@ -264,25 +262,17 @@ public class RunTime : MonoBehaviour {
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
 		float distDanger = player.losRange / (dist + 1); 
+		Debug.Log (player.losRange + "/" +(dist + 1) + " = " + distDanger);
 		danger = angleDanger * distDanger;
-
 		return danger;
 	}
 
 	float calculateThreatDistance(float angle, float dist){
 		float danger = 0;
-
-		float angleDanger = (angle/-180f) + .1f ;
-
+		float angleDanger = (angle/-180f) + 1 ;
 		float distDanger = player.losRange / (dist + 1); 
-
-	//	Debug.Log ("angle " + angleDanger);
-	//	Debug.Log ("dist "+distDanger);
-
 		danger = angleDanger + distDanger;
-		
 		return danger;
-
 	}
 
 
@@ -321,16 +311,11 @@ public class RunTime : MonoBehaviour {
 
 			if(hit.transform.gameObject == p.gameObject)
 			{
-				//enemyMetric em = new enemyMetric();
-
 				Vector2 eWorldPos = new Vector3(eWorldX, eWorldY);
 				Vector2 pWorldPos = new Vector2(worldX, worldY);
 						
 				float distance = (Vector2.Distance(eWorldPos, pWorldPos));
 				float angle = Vector3.Angle(to, from);
-
-				//Debug.Log (distance +" "+ angle);
-
 
 				distDanger += calculateThreatDistance(angle, distance);
 				angleDanger += calculateThreatEvenAngle(angle, distance);
@@ -341,6 +326,10 @@ public class RunTime : MonoBehaviour {
 			Destroy(enemy);
 
 		}
+
+		distDanger = (distDanger > 15) ? 15 : distDanger;
+		angleDanger = (angleDanger > 15) ? 15 : angleDanger;
+
 
 		Destroy(p.gameObject);
 		Destroy (p);
