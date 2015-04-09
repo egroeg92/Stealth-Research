@@ -40,38 +40,21 @@ public class RunTime : MonoBehaviour {
 
 	LineRenderer playerPathRenderer;
 	int projectedPointCount;
+
+
 	void Start(){
-		GameObject[] en = GameObject.FindGameObjectsWithTag ("Enemy") as GameObject[];
-		enemies = new Enemy[en.Length];
-		for (int i = 0; i < en.Length; i++)
-			enemies [i] = en [i].GetComponent<Enemy> ();
+		// get enemies
+		getEnemies ();
 
-		playerNodes = new List<PlayerTimeStamp> ();
+		playerNodes = new List<PlayerTimeStamp> ();	
 
-
+		//set danger slider max value
 		dangerMeter.maxValue = maxDangerValue;
+
+		// if replay mode
 		if (ReplayLast) {
 			GameState.Instance.running = false;
-			playerNodes = XMLParser.Instance.Load(loadFrom);
-			player.disablePlayerControls();
-			currentNode =  playerNodes[0];
-
-			playerPathRenderer = player.gameObject.AddComponent<LineRenderer>();
-			playerPathRenderer.material = new Material (Shader.Find("Particles/Additive"));
-
-			playerPathRenderer.SetColors(Color.green, Color.green);
-			playerPathRenderer.SetVertexCount(1);
-			playerPathRenderer.SetWidth(0.2F, 0.2F);
-			playerPathRenderer.SetPosition(0, player.transform.position);
-
-
-			presentPos = player.transform.position;
-			previousPos = player.transform.position;
-			nextPos = player.transform.position;
-
-
-
-
+			setUpReplay ();
 		}else{
 			dangerMeter.gameObject.SetActive(false);
 		}
@@ -79,11 +62,14 @@ public class RunTime : MonoBehaviour {
 
 	void Update () {
 
+		// if in replay mode
 		if (ReplayLast) {
 			setReplayFrame (currentNode);
 		}
 
+		//set game state
 		GameState.Instance.won = false;
+
 		if (Vector3.Distance (player.transform.position, map.end.transform.position) < 2) {
 			GameState.Instance.won = true;
 		}
@@ -98,20 +84,19 @@ public class RunTime : MonoBehaviour {
 	}
 	void LateUpdate()
 	{
-
+		//draw vector dirrection of player
 		Debug.DrawLine (player.transform.position, (player.transform.position + player.transform.forward * 10),Color.red);
 
-
-
 		GameState.Instance.seen = false;
+
+		// create a player time stamp
 		PlayerTimeStamp p = createPlayerTimeStamp ();
 		enemyMetricContainer emc = new enemyMetricContainer ();
-
 		emc.count = 0;
 
+		// check to see if a player is seen
 		for(int i = 0 ; i < enemies.Length ; i++){
 			Enemy e = enemies[i];
-
 			if(e.canSee(player)){
 				GameState.Instance.seen = true;
 				e.seesPlayer = true;
@@ -119,36 +104,34 @@ public class RunTime : MonoBehaviour {
 				e.seesPlayer = false;
 			}
 
-			// if not a replay, record new metric
+			// if playing, add metric data (dist and angle) to list for replay
 			if(!ReplayLast)
 			{	
 				if(player.canSee(e)){
 					emc.count ++;
-
 					enemyMetric em = new enemyMetric();
 					em.id = i;
 
 					Vector2 ePos = new Vector2(e.transform.position.x, e.transform.position.z);
 					Vector2 pPos = new Vector2(player.transform.position.x, player.transform.position.z);
-
 					em.distance = (Vector2.Distance(ePos, pPos));
 
 					Vector3 to = player.transform.position - e.transform.position;
 					Vector3 from = e.transform.forward;
-
 					em.angle = Vector3.Angle(to, from);
 
 					emc.enemyMetrics.Add (em);
 				}
-
 				EnemyTimeStamp en = createEnemyTimeStamp(i,e);
 				p.enemies.Add(en);
 			}
 
 		}
 
+		// if in replay mode move to next frame
 		if (ReplayLast) {
 
+			// for slow down
 			if((Time.frameCount) % (replaySpeed) == 0){
 				currentFrame++;
 				if(currentFrame < playerNodes.Count )
@@ -156,6 +139,7 @@ public class RunTime : MonoBehaviour {
 			}
 
 		}else{
+		// save frame
 			p.enemyMetricContainer = emc;
 			playerNodes.Add (p);
 		}
@@ -163,6 +147,33 @@ public class RunTime : MonoBehaviour {
 
 
 	}
+
+	void getEnemies ()
+	{
+		GameObject[] en = GameObject.FindGameObjectsWithTag ("Enemy") as GameObject[];
+		enemies = new Enemy[en.Length];
+		for (int i = 0; i < en.Length; i++)
+			enemies [i] = en [i].GetComponent<Enemy> ();
+	}
+
+	// load saved game, disable player controls, start line renderer to draw path, set player position, set first load node
+	void setUpReplay ()
+	{
+		playerNodes = XMLParser.Instance.Load (loadFrom);
+		player.disablePlayerControls ();
+		currentNode = playerNodes [0];
+		playerPathRenderer = player.gameObject.AddComponent<LineRenderer> ();
+		playerPathRenderer.material = new Material (Shader.Find ("Particles/Additive"));
+		playerPathRenderer.SetColors (Color.green, Color.green);
+		playerPathRenderer.SetVertexCount (1);
+		playerPathRenderer.SetWidth (0.2F, 0.2F);
+		playerPathRenderer.SetPosition (0, player.transform.position);
+		presentPos = player.transform.position;
+		previousPos = player.transform.position;
+		nextPos = player.transform.position;
+	}
+
+	// load data from node
 	void setReplayFrame(PlayerTimeStamp node){
 		//set player pos
 		player.transform.position = node.pos;
@@ -188,16 +199,14 @@ public class RunTime : MonoBehaviour {
 		ArrayList dangersAngle = new ArrayList ();
 		ArrayList dangersDist = new ArrayList ();
 
-
+		// calculate metrics
 		if (emc.enemyMetrics.Count != 0){
 			for (int i = 0; i < emc.enemyMetrics.Count ; i++) {
 				enemyMetric em = emc.enemyMetrics[i];
 
 				if(player.canSee(enemies[em.id])){
-
 					dangersAngle.Add(calculateAngleThreatMetric(em.angle, em.distance));
 					dangersDist.Add(calculateDistanceThreatMetric(em.angle, em.distance)/(i+1));
-
 				}
 			}
 
@@ -212,7 +221,7 @@ public class RunTime : MonoBehaviour {
 			j++;
 		}
 
-		// dangerValue max is 20
+		// double check its not greater that maxDangerValue
 		dangerValueAngle = (dangerValueAngle > maxDangerValue) ? maxDangerValue : dangerValueAngle;
 		dangerValueDist = (dangerValueDist > maxDangerValue) ? maxDangerValue : dangerValueDist;
 
@@ -244,7 +253,7 @@ public class RunTime : MonoBehaviour {
 				dangerMeterAngle.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , node.pos.z+ .025f);
 			
 			}
-				//predict next pos
+			// predict next pos && danger at next position
 			if (currentFrame % pathPredictor == 0 && dangerMeterAngle != null) {
 				previousPos = presentPos;
 				presentPos = player.transform.position;
