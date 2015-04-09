@@ -195,11 +195,8 @@ public class RunTime : MonoBehaviour {
 
 				if(player.canSee(enemies[em.id])){
 
-					dangersAngle.Add(calculateThreatEvenAngle(em.angle, em.distance));
-					dangersDist.Add(calculateThreatDistance(em.angle, em.distance)/(i+1));
-					                
-				//	dangerValueAngle += (calculateThreatEvenAngle(em.angle, em.distance)/(i+1));
-				//	dangerValueDist += (calculateThreatDistance(em.angle, em.distance)/(i+1));
+					dangersAngle.Add(calculateAngleThreatMetric(em.angle, em.distance));
+					dangersDist.Add(calculateDistanceThreatMetric(em.angle, em.distance)/(i+1));
 
 				}
 			}
@@ -277,7 +274,7 @@ public class RunTime : MonoBehaviour {
 
 	}
 
-	float calculateThreatEvenAngle(float angle, float dist){
+	float calculateAngleThreatMetric(float angle, float dist){
 		float danger = 0;
 		float angleDanger = -(angle/180f) + 1 ;
 		float distDanger = -(dist/safeDistance) + 1; 
@@ -285,7 +282,7 @@ public class RunTime : MonoBehaviour {
 		return danger;
 	}
 
-	float calculateThreatDistance(float angle, float dist){
+	float calculateDistanceThreatMetric(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
 		float distDanger = -(dist/safeDistance) + 1; ; 
@@ -306,6 +303,9 @@ public class RunTime : MonoBehaviour {
 
 		float distDanger = 0;
 		float angleDanger = 0;
+
+		ArrayList dangersAngle = new ArrayList ();
+		ArrayList dangersDist = new ArrayList ();
 
 		foreach(EnemyTimeStamp e in enemyStamps){
 			Vector3 eForward = e.forward;
@@ -332,8 +332,8 @@ public class RunTime : MonoBehaviour {
 				float distance = (Vector2.Distance(eWorldPos, pWorldPos));
 				float angle = Vector3.Angle(to, from);
 
-				distDanger += calculateThreatDistance(angle, distance);
-				angleDanger += calculateThreatEvenAngle(angle, distance);
+				dangersAngle.Add (calculateDistanceThreatMetric(angle, distance));
+				dangersAngle.Add (calculateAngleThreatMetric(angle, distance));
 
 			}
 
@@ -341,6 +341,17 @@ public class RunTime : MonoBehaviour {
 			Destroy(enemy);
 
 		}
+
+		dangersAngle.Sort();
+		dangersDist.Sort();
+		
+		float j = 1;
+		for(int i = dangersAngle.Count - 1; i >= 0 ; i-- ){
+			dangerValueAngle += (float)dangersAngle[i]/j;
+			dangerValueDist += (float)dangersDist[i]/j;
+			j++;
+		}
+
 
 		distDanger = (distDanger > maxDangerValue) ? maxDangerValue : distDanger;
 		angleDanger = (angleDanger > maxDangerValue) ? maxDangerValue : angleDanger;
