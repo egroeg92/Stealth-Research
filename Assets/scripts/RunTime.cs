@@ -111,7 +111,6 @@ public class RunTime : MonoBehaviour {
 					emc.count ++;
 					enemyMetric em = new enemyMetric();
 					em.id = i;
-
 					Vector2 ePos = new Vector2(e.transform.position.x, e.transform.position.z);
 					Vector2 pPos = new Vector2(player.transform.position.x, player.transform.position.z);
 					em.distance = (Vector2.Distance(ePos, pPos));
@@ -275,7 +274,8 @@ public class RunTime : MonoBehaviour {
 
 				int projectedFrame = currentFrame + pathPredictor;
 				if(projectedFrame < playerNodes.Count){
-					calculateProjectedThreat(currentFrame + pathPredictor , nextPos);
+
+					calculateProjectedThreat(currentFrame + pathPredictor , nextPos,playerNodes[currentFrame].enemyMetricContainer);
 				}
 			}
 
@@ -294,7 +294,8 @@ public class RunTime : MonoBehaviour {
 	float calculateDistanceThreatMetric(float angle, float dist){
 		float danger = 0;
 		float angleDanger = (angle/-180f) + 1 ;
-		float distDanger = -(dist/safeDistance) + 1; ; 
+		float distance = (dist < safeDistance) ? dist : safeDistance;
+		float distDanger = -(distance/safeDistance) + 1; ; 
 		danger = (angleDanger + (2* distDanger))*maxDangerValue/3;
 		return danger;
 	}
@@ -302,7 +303,7 @@ public class RunTime : MonoBehaviour {
 
 	//sort of hacky, created new player at projected spot and new enemies and calculated if it could see the enemies
 	//Projected threat is still calculated if the enemy is not within sight of the enemy, but there are no obstacles between the enemy and player
-	void calculateProjectedThreat(int frame , Vector3 pos){
+	void calculateProjectedThreat(int frame , Vector3 pos, enemyMetricContainer emc){
 
 		PlayerTimeStamp node = playerNodes[frame];
 		List<EnemyTimeStamp> enemyStamps = node.enemies;
@@ -316,34 +317,47 @@ public class RunTime : MonoBehaviour {
 		ArrayList dangersAngle = new ArrayList ();
 		ArrayList dangersDist = new ArrayList ();
 
+
 		foreach(EnemyTimeStamp e in enemyStamps){
+			bool dangerous = false;
+
 			Vector3 eForward = e.forward;
 			Enemy enemy = Instantiate(enemies[0]) as Enemy;
 			enemy.transform.rotation = e.rot;
 			enemy.transform.position = e.pos;
 
-			
-			Vector3 to = pos - e.pos;
-			Vector3 from = e.forward;
+			foreach(enemyMetric em in emc.enemyMetrics){
+				if(em.id == e.id)
+					dangerous = true;
+			}
+			if(p.canSee(enemy))
+				dangerous = true;
 
-			int lm = 1 << 8;
-			lm = ~lm;
+			if(dangerous){
+				Vector3 to = pos - e.pos;
+				Vector3 from = e.forward;
 
-			RaycastHit hit;
-			Physics.Raycast(enemy.transform.position , to , out hit,Mathf.Infinity, lm);
+				int lm = 1 << 8;
+				lm = ~lm;
 
-			if(hit.transform.gameObject == p.gameObject)
-			{
-				Vector2 eWorldPos = new Vector3(e.pos.x, e.pos.z);
-				Vector2 pWorldPos = new Vector2(p.transform.position.x, p.transform.position.z);
-					
+				RaycastHit hit;
+				Physics.Raycast(enemy.transform.position , to , out hit,Mathf.Infinity, lm);
 
-				float distance = (Vector2.Distance(eWorldPos, pWorldPos));
-				float angle = Vector3.Angle(to, from);
+				if(hit.transform.gameObject == p.gameObject)
+				{
+					Vector2 eWorldPos = new Vector3(e.pos.x, e.pos.z);
+					Vector2 pWorldPos = new Vector2(p.transform.position.x, p.transform.position.z);
+						
 
-				dangersAngle.Add (calculateDistanceThreatMetric(angle, distance));
-				dangersAngle.Add (calculateAngleThreatMetric(angle, distance));
+					float distance = (Vector2.Distance(eWorldPos, pWorldPos));
+					float angle = Vector3.Angle(to, from);
 
+					dangersDist.Add (calculateDistanceThreatMetric(angle, distance));
+					dangersAngle.Add (calculateAngleThreatMetric(angle, distance));
+
+					//Debug.Log (calculateDistanceThreatMetric(angle, distance));
+
+				}
 			}
 
 			Destroy (enemy.gameObject);
@@ -351,13 +365,19 @@ public class RunTime : MonoBehaviour {
 
 		}
 
+		Destroy(p.gameObject);
+		Destroy (p);
+
 		dangersAngle.Sort();
 		dangersDist.Sort();
-		
+
+
 		float j = 1;
+
 		for(int i = dangersAngle.Count - 1; i >= 0 ; i-- ){
-			dangerValueAngle += (float)dangersAngle[i]/j;
-			dangerValueDist += (float)dangersDist[i]/j;
+			distDanger += (float)dangersAngle[i]/j;
+			angleDanger += (float)dangersDist[i]/j;
+
 			j++;
 		}
 
@@ -365,9 +385,6 @@ public class RunTime : MonoBehaviour {
 		distDanger = (distDanger > maxDangerValue) ? maxDangerValue : distDanger;
 		angleDanger = (angleDanger > maxDangerValue) ? maxDangerValue : angleDanger;
 
-
-		Destroy(p.gameObject);
-		Destroy (p);
 
 		if(distDanger > 0){
 			GameObject dangerMeterDist = GameObject.CreatePrimitive(PrimitiveType.Cube);
