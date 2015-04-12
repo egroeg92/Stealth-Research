@@ -205,7 +205,7 @@ public class RunTime : MonoBehaviour {
 
 				if(player.canSee(enemies[em.id])){
 					dangersAngle.Add(calculateAngleThreatMetric(em.angle, em.distance));
-					dangersDist.Add(calculateDistanceThreatMetric(em.angle, em.distance)/(i+1));
+					dangersDist.Add(calculateDistanceThreatMetric(em.angle, em.distance));
 				}
 			}
 
@@ -241,6 +241,7 @@ public class RunTime : MonoBehaviour {
 				dangerMeterDist.renderer.material.color = Color.green;
 				dangerMeterDist.transform.localScale = new Vector3(.1f , dangerValueDist + .1f , .05f);
 				dangerMeterDist.transform.position = new Vector3(node.pos.x  , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , node.pos.z- .025f);
+				dangerMeterDist.name = "distance danger :"+dangerValueDist;
 			}
 
 			if(currentFrame % framesPerMeter == 0 ){
@@ -250,7 +251,7 @@ public class RunTime : MonoBehaviour {
 				dangerMeterAngle.renderer.material.color = Color.cyan;
 				dangerMeterAngle.transform.localScale = new Vector3(.1f , dangerValueAngle , .05f);
 				dangerMeterAngle.transform.position = new Vector3(node.pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , node.pos.z+ .025f);
-			
+				dangerMeterAngle.name = "angle danger :" + dangerValueAngle;
 			}
 			// predict next pos && danger at next position
 			if (currentFrame % pathPredictor == 0 && dangerMeterAngle != null) {
@@ -285,17 +286,28 @@ public class RunTime : MonoBehaviour {
 
 	float calculateAngleThreatMetric(float angle, float dist){
 		float danger = 0;
-		float angleDanger = -(angle/180f) + 1 ;
-		float distDanger = -(dist/safeDistance) + 1; 
+		float angleDanger;
+		if (angle <= 45)
+			angleDanger = 1;
+		else
+			angleDanger = -(Mathf.Sqrt(angle)/Mathf.Sqrt (180f)) + 1;
+		float distance = dist * dist;
+		distance = (distance < (safeDistance*safeDistance)) ? distance : (safeDistance*safeDistance);
+		float distDanger = -(distance/(safeDistance*safeDistance)) + 1; 
 		danger = ((2* angleDanger) + distDanger) * maxDangerValue / 3;
 		return danger;
 	}
 
 	float calculateDistanceThreatMetric(float angle, float dist){
 		float danger = 0;
-		float angleDanger = (angle/-180f) + 1 ;
-		float distance = (dist < safeDistance) ? dist : safeDistance;
-		float distDanger = -(distance/safeDistance) + 1; ; 
+		float angleDanger;
+		if (angle <= 45)
+			angleDanger = 1;
+		else
+			angleDanger = -(Mathf.Sqrt(angle)/Mathf.Sqrt (180f)) + 1;
+		float distance = dist * dist;
+		distance = (distance < (safeDistance*safeDistance)) ? distance : (safeDistance*safeDistance);
+		float distDanger = -(distance/(safeDistance*safeDistance)) + 1; 
 		danger = (angleDanger + (2* distDanger))*maxDangerValue/3;
 		return danger;
 	}
@@ -392,6 +404,7 @@ public class RunTime : MonoBehaviour {
 			dangerMeterDist.renderer.material.color = Color.red;
 			dangerMeterDist.transform.localScale = new Vector3(.1f , distDanger + .1f , .05f);
 			dangerMeterDist.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterDist.transform.localScale.y /2) , pos.z-0.025f);
+			dangerMeterDist.name = "projected distance danger :"+distDanger;
 		}		
 		if(angleDanger > 0){
 			GameObject dangerMeterAngle = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -399,6 +412,7 @@ public class RunTime : MonoBehaviour {
 			dangerMeterAngle.renderer.material.color = Color.magenta;
 			dangerMeterAngle.transform.localScale = new Vector3(.1f , angleDanger + .1f , .05f);
 			dangerMeterAngle.transform.position = new Vector3(pos.x , map.transform.position.y + (dangerMeterAngle.transform.localScale.y /2) , pos.z+0.025f);
+			dangerMeterAngle.name = "projected angle danger :"+angleDanger;
 		}
 
 
